@@ -2,19 +2,10 @@
 import { serverUsePokemon } from '../../server/utils/usePokemon'
 
 export default defineEventHandler(async (event) => {
+  const { getCountPokemon } = serverUsePokemon(event)
+
   try {
-    const supabase = event.context.supabase
-    
-    const { count, error } = await supabase
-      .from('pokemon')
-      .select('*', { count: 'exact', head: true })
-    
-    if (error) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: 'ポケモンの総数取得に失敗しました'
-      })
-    }
+    const count = await getCountPokemon()
     
     return { count: count || 0 }
   } catch (error) {

@@ -4,29 +4,28 @@ import type { H3Event } from 'h3'
 export const serverUsePokemon = (event: H3Event) => {
   const supabase = event.context.supabase
 
-  const getAllPokemon = async () => {
+  const getInitPokemon = async (offset: number, limit: number) => {
     const { data, error } = await supabase
       .from('pokemon')
-      .select('id, name, sprite_url, types')
-      .order('id') 
+      .select('id, name, japanese_name, sprite_url')
+      .range(offset, limit)
+      .order('id')
     
     if (error) throw error
     return data || []
   }
 
-  const getPokemonById = async (id: number) => {
-    const { data, error } = await supabase
+  const getCountPokemon = async () => {
+    const { count, error } = await supabase
       .from('pokemon')
-      .select('*')
-      .eq('id', id)
-      .single()
-    
+      .select('*', { count: 'exact', head: true })
+
     if (error) throw error
-    return data
+    return count || 0
   }
 
   return {
-    getAllPokemon,
-    getPokemonById
+    getInitPokemon,
+    getCountPokemon
   }
 }

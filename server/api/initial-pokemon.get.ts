@@ -1,8 +1,10 @@
 // server/api/initial-pokemon.get.ts
+import { serverUsePokemon } from '../../server/utils/usePokemon'
+
 export default defineEventHandler(async (event) => {
+  const { getInitPokemon } = serverUsePokemon(event)
+
   try {
-    const supabase = event.context.supabase
-    
     // クエリパラメータから取得、デフォルトは1ページ目
     const query = getQuery(event)
     const page = Number(query.page) || 1
@@ -12,18 +14,7 @@ export default defineEventHandler(async (event) => {
     const offset = (page - 1) * itemsPerPage
     const limit = offset + itemsPerPage - 1
     
-    const { data, error } = await supabase
-      .from('pokemon')
-      .select('id, name, japanese_name, sprite_url')
-      .range(offset, limit)
-      .order('id')
-    
-    if (error) {
-      throw createError({
-        statusCode: 500,
-        statusMessage: `${page}ページ目のポケモンデータ取得に失敗しました`
-      })
-    }
+    const data = await getInitPokemon(offset, limit)
     
     return {
       data: data || [],
