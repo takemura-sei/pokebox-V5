@@ -1,8 +1,9 @@
-import { usePokemon } from "@/composables/useSupaPokemon";
+// server/api/secure-pokemon.get.ts
+import { serverUsePokemon } from '../../server/utils/usePokemon'
 
-const { getPokemonById } = usePokemon();
-
-export default defineEventHandler(async () => {
-  const result = await getPokemonById(1);
-  return result;
+export default defineEventHandler(async (event) => {
+  const { getPokemonById } = serverUsePokemon(event)
+  const result = await getPokemonById(1)
+  return result
 })
+
