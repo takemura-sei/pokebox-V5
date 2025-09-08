@@ -24,6 +24,7 @@ export class AuthService {
     })
 
     if (error) throw new Error(error.message)
+    console.log('Sign-up data:', data) // デバッグ用ログ
     return data
   }
 

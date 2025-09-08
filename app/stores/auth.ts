@@ -118,6 +118,15 @@ export const useAuthStore = defineStore('auth', {
         console.error('認証初期化エラー:', error)
         this.isInitialized = true 
       }
+    },
+
+    /**
+     * 初期化完了まで待機
+     */
+    async waitForInitialization() {
+      while (!this.isInitialized) {
+        await new Promise(resolve => setTimeout(resolve, 50))
+      }
     }
   }
 })

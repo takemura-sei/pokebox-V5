@@ -2,21 +2,25 @@
 import { useAuthStore } from '@/stores/auth'
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
-  // サーバーサイドでは即座にログインページにリダイレクト（リダイレクト先も記録）
+  // サーバーサイドでは認証が必要なページかどうかのみチェック
   if (import.meta.server) {
+    // 公開ページは通す（ログインページなど）
+    const publicRoutes = ['/login', '/']
+    if (publicRoutes.includes(to.path)) {
+      return
+    }
     return navigateTo(`/login?redirect=${encodeURIComponent(to.path)}`)
   }
 
-  // クライアントサイドでは認証状態をチェック
+  // クライアントサイドでの詳細な認証チェック
   if (import.meta.client) {
     const authStore = useAuthStore()
     
-    // 認証状態が初期化されるまで待つ
-    while (!authStore.isInitialized) {
-      await new Promise(resolve => setTimeout(resolve, 50))
+    // より効率的な初期化待機
+    if (!authStore.isInitialized) {
+      await authStore.waitForInitialization()
     }
 
-    // 認証状態を確認
     if (!authStore.isAuthenticated) {
       return navigateTo(`/login?redirect=${encodeURIComponent(to.path)}`)
     }
