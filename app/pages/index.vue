@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { usePokemonStore } from '@/stores/pokemon'
+import { useAuthStore } from '@/stores/auth'
 import  Pagination from '@/components/Pagination.vue'
 
 // Storeから初期データを取得（SSRで既に格納済み）
 const pokemonStore = usePokemonStore()
 const { totalCount, initialPokemon, types, isInitialized, pagination } = storeToRefs(pokemonStore)
+const authStore = useAuthStore()
 
 // ローディング状態管理
 const isLoadingPage = ref(false)
@@ -29,10 +31,62 @@ const handlePokemonClick = (pokemonId: number) => {
   console.log('Pokemon clicked:', pokemonId)
   // TODO: navigateTo(`/pokemon/${pokemonId}`)
 }
+
+// ログアウト処理
+const handleLogout = async () => {
+  const result = await authStore.signOut()
+  if (result.success) {
+    console.log('ログアウトしました')
+  }
+}
 </script>
 
 <template>
   <div class="container mx-auto p-4">
+    <!-- ヘッダー -->
+    <header class="mb-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-center">ポケモン図鑑</h1>
+        
+        <!-- 認証エリア -->
+        <div class="flex items-center gap-4">
+          <!-- ClientOnlyで囲んでSSRをスキップ -->
+          <ClientOnly>
+            <div v-if="authStore.isAuthenticated" class="flex items-center gap-3">
+              <span class="text-sm text-gray-600">
+                こんにちは、{{ authStore.userEmail }}さん
+              </span>
+              <button 
+                @click="handleLogout"
+                :disabled="authStore.isLoading"
+                class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+              >
+                ログアウト
+              </button>
+            </div>
+            
+            <div v-else class="flex items-center gap-3">
+              <NuxtLink 
+                to="/login" 
+                class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                ログイン
+              </NuxtLink>
+            </div>
+            
+            <!-- 読み込み中の表示 -->
+            <template #fallback>
+              <div class="flex items-center gap-3">
+                <div class="px-3 py-1 text-sm bg-gray-300 text-gray-600 rounded">
+                  読み込み中...
+                </div>
+              </div>
+            </template>
+          </ClientOnly>
+        </div>
+      </div>
+    </header>
+
     <h1 class="text-3xl font-bold mb-6 text-center">ポケモン図鑑</h1>
     
     <!-- 初期化後の表示 -->

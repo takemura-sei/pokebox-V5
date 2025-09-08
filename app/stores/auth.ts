@@ -6,13 +6,15 @@ interface AuthState {
   user: any | null
   session: any | null
   isLoading: boolean
+  isInitialized: boolean
 }
 
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     user: null,
     session: null,
-    isLoading: false
+    isLoading: false,
+    isInitialized: false
   }),
 
   getters: {
@@ -111,8 +113,10 @@ export const useAuthStore = defineStore('auth', {
             this.user = null
           }
         })
+        this.isInitialized = true
       } catch (error) {
         console.error('認証初期化エラー:', error)
+        this.isInitialized = true 
       }
     }
   }

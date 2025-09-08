@@ -5,9 +5,9 @@ export default defineNuxtPlugin(async () => {
   const authStore = useAuthStore()
   
   // クライアント側でのみ実行
-  if (process) {
-    console.log('認証状態を初期化中...')
+  if (import.meta.client) {
+    console.log('認証プラグイン: 認証状態を初期化中...')
     await authStore.initialize()
-    console.log('認証状態初期化完了')
+    console.log('認証プラグイン: 認証状態初期化完了')
   }
 })
