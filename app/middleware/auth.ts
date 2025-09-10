@@ -2,14 +2,17 @@
 import { useAuthStore } from '@/stores/auth'
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
+  const publicRoutes = ['/login', '/']
+
+  if (publicRoutes.includes(to.path)) {
+    return
+  }
+  
   // サーバーサイドでは認証が必要なページかどうかのみチェック
   if (import.meta.server) {
-    // 公開ページは通す（ログインページなど）
-    const publicRoutes = ['/login', '/']
-    if (publicRoutes.includes(to.path)) {
-      return
-    }
-    return navigateTo(`/login?redirect=${encodeURIComponent(to.path)}`)
+    return navigateTo(`/login?redirect=${encodeURIComponent(to.path)}`, {
+      redirectCode: 302 // 高速リダイレクト
+    })
   }
 
   // クライアントサイドでの詳細な認証チェック

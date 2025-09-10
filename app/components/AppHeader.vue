@@ -13,41 +13,52 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <header class="mb-6">
+  <header class="mb-4 sm:mb-6">
     <div class="flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-center">ポケモン図鑑</h1>
+      <!-- タイトル - モバイルでコンパクト -->
+      <h1 class="text-xl sm:text-3xl font-bold text-center text-gray-800">
+        <span class="hidden sm:inline"></span>
+        <span class="sm:hidden"></span>
+      </h1>
       
-      <!-- 認証エリア -->
-      <div class="flex items-center gap-4">
-        <!-- ClientOnlyで囲んでSSRをスキップ -->
+      <!-- 認証エリア - モバイル対応 -->
+      <div class="flex items-center">
         <ClientOnly>
-          <div v-if="authStore.isAuthenticated" class="flex items-center gap-3">
-            <span class="text-sm text-gray-600">
-              こんにちは、{{ authStore.userEmail }}さん
+          <!-- ログイン済み -->
+          <div v-if="authStore.isAuthenticated" class="flex items-center gap-2 sm:gap-3">
+            <!-- ユーザー名表示（モバイルでは短縮） -->
+            <span class="text-xs sm:text-sm text-gray-600 max-w-[80px] sm:max-w-none truncate">
+              <span class="hidden sm:inline">こんにちは、</span>{{ authStore.userEmail }}<span class="hidden sm:inline">さん</span>
             </span>
+            
+            <!-- ログアウトボタン -->
             <button 
               @click="handleLogout"
               :disabled="authStore.isLoading"
-              class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50"
+              class="px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 transition-colors"
             >
-              ログアウト
+              <span class="sm:hidden">logout</span>
+              <span class="hidden sm:inline">ログアウト</span>
             </button>
           </div>
           
-          <div v-else class="flex items-center gap-3">
+          <!-- 未ログイン -->
+          <div v-else class="flex items-center">
             <NuxtLink 
               to="/login" 
-              class="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+              class="px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
-              ログイン
+              <span class="sm:hidden">login</span>
+              <span class="hidden sm:inline">ログイン</span>
             </NuxtLink>
           </div>
           
           <!-- 読み込み中の表示 -->
           <template #fallback>
-            <div class="flex items-center gap-3">
-              <div class="px-3 py-1 text-sm bg-gray-300 text-gray-600 rounded">
-                読み込み中...
+            <div class="flex items-center">
+              <div class="px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-gray-300 text-gray-600 rounded">
+                <span class="sm:hidden">...</span>
+                <span class="hidden sm:inline">読み込み中...</span>
               </div>
             </div>
           </template>
@@ -56,3 +67,19 @@ const handleLogout = async () => {
     </div>
   </header>
 </template>
+
+<style scoped>
+/* スムーズなトランジション */
+.transition-colors {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* テキスト切り詰め */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

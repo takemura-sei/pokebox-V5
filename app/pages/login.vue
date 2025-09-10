@@ -101,6 +101,7 @@ onMounted(async () => {
               id="email"
               v-model="email"
               type="email"
+              autocomplete="current-password"
               required
               class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="email@example.com"
@@ -116,6 +117,7 @@ onMounted(async () => {
               id="password"
               v-model="password"
               type="password"
+              autocomplete="current-password"
               required
               class="mt-1 appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="パスワード（6文字以上）"
