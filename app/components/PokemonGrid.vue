@@ -1,6 +1,7 @@
 <!-- app/components/PokemonGrid.vue -->
 <script setup lang="ts">
 import type { Database } from '@/types/supabase'
+import FavoriteButton from '@/components/FavoriteButton.vue'
 
 type Pokemon = Pick<Database['public']['Tables']['pokemon']['Row'], 'id' | 'name' | 'japanese_name' | 'sprite_url'>
 
@@ -39,7 +40,6 @@ const handlePokemonClick = (pokemonId: number) => {
 const gridClasses = computed(() => {
   const { sm, md, lg } = props.columns
   
-  // Tailwindの既存クラスをマッピング
   const getGridCols = (cols: number) => {
     const gridMap: Record<number, string> = {
       1: 'grid-cols-1',
@@ -114,8 +114,7 @@ const gridClasses = computed(() => {
     <div 
       v-for="pokemon in pokemon" 
       :key="pokemon.id"
-      class="bg-white rounded-lg shadow-md p-4 hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer border border-gray-200 relative"
-      @click="handlePokemonClick(pokemon.id)"
+      class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200 relative group"
     >
       <!-- ローディング中のオーバーレイ -->
       <div 
@@ -125,25 +124,36 @@ const gridClasses = computed(() => {
         <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
 
-      <!-- ポケモン画像 -->
-      <div class="relative mb-3">
-        <img 
-          :src="pokemon.sprite_url || '/placeholder-pokemon.png'" 
-          :alt="pokemon.japanese_name || pokemon.name"
-          class="w-full h-24 object-contain"
-          loading="lazy"
-          @error="($event.target as HTMLImageElement).src = '/placeholder-pokemon.png'"
-        >
+      <!-- お気に入りボタン -->
+      <div class="absolute top-2 right-2 z-10">
+        <FavoriteButton :pokemon-id="pokemon.id" />
       </div>
 
-      <!-- ポケモン情報 -->
-      <div class="text-center">
-        <p class="text-sm font-semibold text-gray-800 mb-1">
-          No.{{ pokemon.id.toString().padStart(3, '0') }}
-        </p>
-        <p class="text-xs text-gray-600 line-clamp-2 min-h-[2rem]">
-          {{ pokemon.japanese_name || pokemon.name }}
-        </p>
+      <!-- クリック可能エリア -->
+      <div 
+        class="p-4 cursor-pointer hover:scale-105 transition-transform duration-200"
+        @click="handlePokemonClick(pokemon.id)"
+      >
+        <!-- ポケモン画像 -->
+        <div class="relative mb-3">
+          <img 
+            :src="pokemon.sprite_url || '/placeholder-pokemon.png'" 
+            :alt="pokemon.japanese_name || pokemon.name"
+            class="w-full h-24 object-contain"
+            loading="lazy"
+            @error="($event.target as HTMLImageElement).src = '/placeholder-pokemon.png'"
+          >
+        </div>
+
+        <!-- ポケモン情報 -->
+        <div class="text-center">
+          <p class="text-sm font-semibold text-gray-800 mb-1">
+            No.{{ pokemon.id.toString().padStart(3, '0') }}
+          </p>
+          <p class="text-xs text-gray-600 line-clamp-2 min-h-[2rem]">
+            {{ pokemon.japanese_name || pokemon.name }}
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -167,16 +177,8 @@ const gridClasses = computed(() => {
   overflow: hidden;
 }
 
-/* ホバー効果の改善 */
-.group:hover .group-hover\:scale-110 {
-  transform: scale(1.1);
-}
-
-/* カードの高さを統一 */
+/* カードの最小高さを設定 */
 .bg-white {
   min-height: 140px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 </style>

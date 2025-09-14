@@ -1,19 +1,7 @@
 // app/services/authService.ts
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/types/supabase'
-
 export class AuthService {
-  private supabase: ReturnType<typeof createClient<Database>> | null = null
-
   private getSupabase() {
-    if (!this.supabase) {
-      const config = useRuntimeConfig()
-      this.supabase = createClient<Database>(
-        config.public.supabaseUrl,
-        config.public.supabaseAnonKey
-      )
-    }
-    return this.supabase
+    return useSupabase()
   }
 
   // ログイン
