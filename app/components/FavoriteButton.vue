@@ -13,6 +13,40 @@ const favoriteStore = useFavoriteStore()
 const loading = ref(false)
 const errorMessage = ref('')
 
+// エラーメッセージの自動消去タイマー
+let errorTimeout: NodeJS.Timeout | null = null
+
+// エラーメッセージを表示する関数
+const showError = (message: string) => {
+  errorMessage.value = message
+  
+  // 既存のタイマーがあればクリア
+  if (errorTimeout) {
+    clearTimeout(errorTimeout)
+  }
+  
+  // 5秒後に自動で消去
+  errorTimeout = setTimeout(() => {
+    errorMessage.value = ''
+  }, 1000)
+}
+
+// エラーメッセージを手動でクリア
+const clearError = () => {
+  errorMessage.value = ''
+  if (errorTimeout) {
+    clearTimeout(errorTimeout)
+    errorTimeout = null
+  }
+}
+
+// コンポーネント破棄時にタイマーをクリア
+onUnmounted(() => {
+  if (errorTimeout) {
+    clearTimeout(errorTimeout)
+  }
+})
+
 // お気に入り状態の確認
 const isFavorite = computed(() => favoriteStore.isFavorite(props.pokemonId))
 
@@ -22,13 +56,13 @@ const handleToggle = async () => {
 
   try {
     loading.value = true
-    errorMessage.value = ''
+    clearError() // エラーをクリア
     
     const result = await favoriteStore.toggleFavorite(props.pokemonId)
     console.log(`お気に入りを${result.action === 'added' ? '追加' : '削除'}しました`)
     
   } catch (error) {
-    errorMessage.value = (error as Error).message
+    showError((error as Error).message)
     console.error('お気に入り切り替えエラー:', error)
   } finally {
     loading.value = false
@@ -70,11 +104,44 @@ const handleToggle = async () => {
     </button>
 
     <!-- エラーメッセージ -->
-    <div
-      v-if="errorMessage"
-      class="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 px-2 py-1 bg-red-500 text-white text-xs rounded whitespace-nowrap z-10"
+    <Transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
     >
-      {{ errorMessage }}
-    </div>
+      <div
+        v-if="errorMessage"
+        class="absolute top-full mt-1 left-1/2 transform -translate-x-1/2 px-3 py-2 bg-red-500 text-white text-xs rounded whitespace-nowrap z-10 shadow-lg max-w-xs"
+      >
+        <div class="flex items-center gap-2">
+          <span>{{ errorMessage }}</span>
+          <!-- 手動クリアボタン -->
+          <button
+            @click="clearError"
+            class="text-white hover:text-gray-200 focus:outline-none"
+            :title="'エラーを消去'"
+          >
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
+
+<style scoped>
+/* プログレスバーのアニメーション */
+@keyframes shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.animate-shrink {
+  animation: shrink 1s linear forwards;
+}
+</style>

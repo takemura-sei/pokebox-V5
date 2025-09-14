@@ -1,23 +1,12 @@
 // app/services/favoriteService.ts
-import { createClient } from '@supabase/supabase-js'
-
 interface UserFavoriteInsert {
   user_id: string
   pokemon_id: number
 }
 
 export class FavoriteService {
-  private supabase: any = null
-
   private getSupabase() {
-    if (!this.supabase) {
-      const config = useRuntimeConfig()
-      this.supabase = createClient(
-        config.public.supabaseUrl,
-        config.public.supabaseAnonKey
-      )
-    }
-    return this.supabase
+    return useSupabase()
   }
 
   // お気に入りかどうかを確認
@@ -43,7 +32,7 @@ export class FavoriteService {
       .insert({
         user_id: userId,
         pokemon_id: pokemonId
-      } as UserFavoriteInsert)
+      } as any)
     
     if (error) {
       throw error
