@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePokemonStore } from '@/stores/pokemon'
 import AppHeader from '@/components/AppHeader.vue'
+import PokemonStats from '@/components/PokemonStats.vue'
 import PokemonGrid from '@/components/PokemonGrid.vue'
 import  Pagination from '@/components/Pagination.vue'
 
@@ -18,6 +19,13 @@ const handlePageChange = async (page: number) => {
   try {
     isLoadingPage.value = true
     await pokemonStore.loadPage(page)
+    
+    // ページ変更後に画面を一番上にスクロール
+    if (import.meta.client) {
+      window.scrollTo({
+        top: 0,
+      })
+    }
   } catch (error) {
     console.error('ページ変更エラー:', error)
     // TODO: エラートーストを表示するなど
@@ -43,22 +51,14 @@ const handlePokemonClick = (pokemonId: number) => {
     <!-- 初期化後の表示 -->
     <div v-if="isInitialized">
       <!-- 基本情報表示 -->
-      <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div class="text-center">
-            <p class="text-2xl font-bold text-blue-600">{{ totalCount }}</p>
-            <p class="text-sm text-gray-600">総ポケモン数</p>
-          </div>
-          <div class="text-center">
-            <p class="text-2xl font-bold text-purple-600">{{ types.length }}</p>
-            <p class="text-sm text-gray-600">タイプ数</p>
-          </div>
-          <div class="text-center">
-            <p class="text-2xl font-bold text-green-600">{{ initialPokemon.length }}</p>
-            <p class="text-sm text-gray-600">表示中</p>
-          </div>
-        </div>
-      </div>
+      <PokemonStats
+        :total-count="totalCount"
+        :displayed-count="initialPokemon.length"
+        :type-count="types.length"
+        :current-page="pagination.currentPage"
+        :total-pages="pagination.totalPages"
+        :loading="isLoadingPage"
+      />
       
       <!-- ポケモン一覧グリッド -->
       <PokemonGrid
