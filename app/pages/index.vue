@@ -1,16 +1,39 @@
 <script setup lang="ts">
 import { usePokemonStore } from '@/stores/pokemon'
+import { useFavoriteStore } from '@/stores/favorite'
+import { useAuthStore } from '@/stores/auth'
 import AppHeader from '@/components/AppHeader.vue'
 import PokemonStats from '@/components/PokemonStats.vue'
 import PokemonGrid from '@/components/PokemonGrid.vue'
 import  Pagination from '@/components/Pagination.vue'
 
+const isDev = process.env.NODE_ENV === 'development'
+
 // Storeから初期データを取得（SSRで既に格納済み）
 const pokemonStore = usePokemonStore()
+const favoriteStore = useFavoriteStore()
+const authStore = useAuthStore()
 const { totalCount, initialPokemon, types, isInitialized, pagination } = storeToRefs(pokemonStore)
 
 // ローディング状態管理
 const isLoadingPage = ref(false)
+
+// 認証状態が変わったらお気に入りを読み込み
+watch(() => authStore.isAuthenticated, async (isAuthenticated) => {
+  if (isAuthenticated) {
+    await favoriteStore.loadFavorites()
+  } else {
+    favoriteStore.reset()
+  }
+}, { immediate: true })
+
+// クライアントサイドでの初期化
+onMounted(async () => {
+  // 認証済みの場合は、お気に入りを読み込み
+  if (authStore.isAuthenticated) {
+    await favoriteStore.loadFavorites()
+  }
+})
 
 // ページ変更処理
 const handlePageChange = async (page: number) => {
@@ -24,11 +47,11 @@ const handlePageChange = async (page: number) => {
     if (import.meta.client) {
       window.scrollTo({
         top: 0,
+        behavior: 'smooth'
       })
     }
   } catch (error) {
     console.error('ページ変更エラー:', error)
-    // TODO: エラートーストを表示するなど
   } finally {
     isLoadingPage.value = false
   }
@@ -85,6 +108,11 @@ const handlePokemonClick = (pokemonId: number) => {
       </div>
       <p class="text-lg text-gray-600">ポケモンデータを読み込み中...</p>
       <p class="text-sm text-gray-500 mt-2">しばらくお待ちください</p>
+    </div>
+
+    <!-- デバッグ情報（開発時のみ） -->
+    <div v-if="isDev" class="fixed bottom-4 right-4 bg-black text-white text-xs p-2 rounded opacity-75">
+      お気に入り数: {{ favoriteStore.count }}
     </div>
   </div>
 </template>
