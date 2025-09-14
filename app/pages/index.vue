@@ -19,6 +19,13 @@ const handlePageChange = async (page: number) => {
   try {
     isLoadingPage.value = true
     await pokemonStore.loadPage(page)
+    
+    // ページ変更後に画面を一番上にスクロール
+    if (import.meta.client) {
+      window.scrollTo({
+        top: 0,
+      })
+    }
   } catch (error) {
     console.error('ページ変更エラー:', error)
     // TODO: エラートーストを表示するなど
